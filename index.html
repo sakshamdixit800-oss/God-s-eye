@@ -1,0 +1,4016 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>God's Eye · Drone Operations Simulator</title>
+    <style>
+      :root {
+        --bg: #0d1110;
+        --panel: #151c19;
+        --panel-2: #1b2420;
+        --line: #2a3931;
+        --text: #e8eee8;
+        --muted: #84958a;
+        --lime: #b9e769;
+        --teal: #63dbc0;
+        --amber: #efbd6b;
+        --red: #ee786e;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          13px/1.45 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        letter-spacing: 0.01em;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 232px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        padding: 25px 16px;
+        border-right: 1px solid var(--line);
+        background: #111714;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 10px 42px;
+      }
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--lime);
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        color: var(--lime);
+        font-size: 19px;
+        box-shadow: 0 0 18px #b9e76925;
+      }
+      .brand b {
+        font-size: 15px;
+        letter-spacing: 0.08em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+      .nav-label {
+        color: #5e6f64;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin: 0 12px 10px;
+      }
+      .nav {
+        display: grid;
+        gap: 5px;
+      }
+      .nav button {
+        background: none;
+        border: 0;
+        text-align: left;
+        padding: 11px 12px;
+        border-radius: 8px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .nav button:hover,
+      .nav button.active {
+        background: #243128;
+        color: var(--lime);
+      }
+      .nav svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+      }
+      .sidebar-bottom {
+        margin-top: auto;
+        border-top: 1px solid var(--line);
+        padding: 18px 10px 2px;
+      }
+      .sim-badge {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--amber);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .sim-badge span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 9px var(--amber);
+      }
+      .sidebar-bottom p {
+        color: var(--muted);
+        font-size: 10px;
+        margin: 8px 0 0;
+      }
+      .content {
+        padding: 26px 30px 35px;
+        max-width: 1700px;
+        width: 100%;
+        margin: auto;
+      }
+      .topbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 25px;
+      }
+      .eyebrow {
+        color: var(--lime);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+      .topbar h1 {
+        font-size: 27px;
+        line-height: 1.1;
+        margin: 0;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+      }
+      .topbar p {
+        color: var(--muted);
+        margin: 8px 0 0;
+        font-size: 12px;
+      }
+      .top-actions {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .icon-btn,
+      .outline-btn {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 7px;
+        padding: 8px 11px;
+        font-size: 11px;
+      }
+      .icon-btn:hover,
+      .outline-btn:hover {
+        border-color: #56725e;
+      }
+      .secure {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--teal);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-right: 8px;
+      }
+      .secure i {
+        width: 7px;
+        height: 7px;
+        background: var(--teal);
+        border-radius: 50%;
+        box-shadow: 0 0 9px var(--teal);
+      }
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 17px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+      }
+      .kpi {
+        padding: 17px 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi:after {
+        content: "";
+        position: absolute;
+        right: -25px;
+        bottom: -43px;
+        width: 100px;
+        height: 100px;
+        border: 1px solid #8aae6026;
+        border-radius: 50%;
+      }
+      .kpi-label {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .kpi-value {
+        font-size: 28px;
+        letter-spacing: -0.04em;
+        margin: 5px 0 1px;
+      }
+      .kpi-meta {
+        font-size: 10px;
+        color: var(--teal);
+      }
+      .kpi-meta.warn {
+        color: var(--amber);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.85fr) minmax(330px, 0.8fr);
+        gap: 17px;
+        align-items: start;
+      }
+      .left-column {
+        display: grid;
+        gap: 17px;
+        align-content: start;
+      }
+      .map-card {
+        min-height: 650px;
+        overflow: hidden;
+      }
+      .card-head {
+        height: 54px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 17px;
+      }
+      .card-head h2 {
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: 0.04em;
+      }
+      .card-head small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .map-wrap {
+        height: 595px;
+        position: relative;
+        overflow: hidden;
+        background: #121a17;
+      }
+      .map-wrap:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(#8db78c0a 1px, transparent 1px),
+          linear-gradient(90deg, #8db78c0a 1px, transparent 1px);
+        background-size: 42px 42px;
+      }
+      .map-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .map-label {
+        position: absolute;
+        font:
+          10px ui-monospace,
+          SFMono-Regular,
+          monospace;
+        color: #73857a;
+        letter-spacing: 0.08em;
+      }
+      .map-label.n {
+        top: 18px;
+        left: 20px;
+      }
+      .map-label.s {
+        bottom: 17px;
+        right: 22px;
+      }
+      .map-legend {
+        position: absolute;
+        bottom: 16px;
+        left: 20px;
+        display: flex;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .map-legend span:before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--c);
+        box-shadow: 0 0 6px var(--c);
+        margin-right: 6px;
+      }
+      .map-controls {
+        position: absolute;
+        top: 17px;
+        right: 17px;
+        display: flex;
+        gap: 6px;
+        z-index: 2;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        max-width: 70%;
+      }
+      .map-controls button {
+        border: 1px solid var(--line);
+        background: #17201ccf;
+        border-radius: 5px;
+        padding: 6px 8px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .map-controls button.active {
+        color: var(--lime);
+        border-color: #7b9b58;
+        background: #293622;
+      }
+      .zone {
+        fill: #b9e7690b;
+        stroke: #b9e76955;
+        stroke-dasharray: 5 6;
+      }
+      .route {
+        fill: none;
+        stroke: #63dbc0;
+        stroke-width: 1.4;
+        stroke-dasharray: 6 6;
+        opacity: 0.72;
+      }
+      .drone {
+        cursor: pointer;
+      }
+      .drone circle {
+        fill: var(--lime);
+        stroke: #0d1110;
+        stroke-width: 2;
+      }
+      .drone text {
+        fill: #dcebd2;
+        font:
+          10px ui-monospace,
+          monospace;
+      }
+      .drone.selected circle {
+        fill: #fff;
+        stroke: var(--lime);
+        stroke-width: 3;
+        filter: drop-shadow(0 0 6px var(--lime));
+      }
+      .drone.alert circle {
+        fill: var(--amber);
+      }
+      .night-view {
+        position: absolute;
+        z-index: 3;
+        left: 20px;
+        right: 20px;
+        top: 50%;
+        bottom: 20px;
+        border: 1px solid #78b77d;
+        border-radius: 7px;
+        overflow: hidden;
+        background: #0a1d12;
+        box-shadow: 0 8px 22px #0008;
+      }
+      .night-view:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-top: 28px solid #07140c99;
+        pointer-events: none;
+      }
+      .night-view:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(#64dc8b22 1px, transparent 1px),
+          linear-gradient(90deg, #64dc8b16 1px, transparent 1px);
+        background-size: 13px 13px;
+        pointer-events: none;
+      }
+      .night-view.off {
+        display: none;
+      }
+      .night-head {
+        position: absolute;
+        z-index: 2;
+        left: 13px;
+        right: 13px;
+        top: 10px;
+        display: flex;
+        justify-content: space-between;
+        color: #c3ffb8;
+        font:
+          10px ui-monospace,
+          monospace;
+        letter-spacing: 0.08em;
+      }
+      .night-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        filter: saturate(0.7) sepia(0.45) hue-rotate(75deg) brightness(1.15);
+      }
+      .night-meta {
+        position: absolute;
+        z-index: 2;
+        bottom: 10px;
+        left: 13px;
+        color: #a2e9ad;
+        font:
+          9px ui-monospace,
+          monospace;
+      }
+      .night-toggle {
+        position: absolute;
+        z-index: 4;
+        left: 20px;
+        top: calc(50% - 39px);
+        border: 1px solid #78b77d;
+        background: #10231aeb;
+        border-radius: 5px;
+        padding: 6px 8px;
+        color: #c3ffb8;
+        font-size: 10px;
+      }
+      .night-card {
+        margin-top: 0;
+        overflow: hidden;
+      }
+      .night-stage {
+        position: relative;
+        padding: 16px;
+        background: #0e1713;
+      }
+      .night-stage .night-view {
+        position: relative;
+        z-index: 1;
+        inset: auto;
+        width: 100%;
+        height: 460px;
+      }
+      .night-stage .night-toggle {
+        left: auto;
+        top: 25px;
+        right: 25px;
+      }
+      .map-hud {
+        position: absolute;
+        z-index: 2;
+        top: 66px;
+        right: 17px;
+        display: grid;
+        gap: 7px;
+      }
+      .map-hud button {
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--line);
+        background: #17201ce8;
+        border-radius: 5px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0;
+      }
+      .compass {
+        width: 42px;
+        height: 42px;
+        border: 1px solid #6a8d6d;
+        border-radius: 50%;
+        background: #17201ce8;
+        display: grid;
+        place-items: center;
+        color: var(--lime);
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+      .map-scale {
+        position: absolute;
+        z-index: 2;
+        bottom: 37px;
+        right: 20px;
+        color: var(--muted);
+        font:
+          9px ui-monospace,
+          monospace;
+      }
+      .map-scale:before {
+        content: "";
+        display: block;
+        width: 70px;
+        height: 5px;
+        border: 1px solid var(--muted);
+        border-top: 0;
+        margin-bottom: 4px;
+      }
+      .gps-readout {
+        position: absolute;
+        z-index: 2;
+        left: 20px;
+        top: 42px;
+        color: #9aaf9d;
+        font:
+          9px ui-monospace,
+          monospace;
+        letter-spacing: 0.05em;
+        background: #111914ba;
+        padding: 4px 6px;
+        border: 1px solid #2b4033;
+        border-radius: 3px;
+      }
+      .road {
+        fill: none;
+        stroke: #bdc49b;
+        stroke-width: 2;
+        opacity: 0.3;
+      }
+      .road.major {
+        stroke-width: 3;
+        opacity: 0.45;
+      }
+      .water {
+        fill: #17383a;
+        stroke: #2e6861;
+        stroke-width: 1;
+        opacity: 0.72;
+      }
+      .contour {
+        fill: none;
+        stroke: #8a9f6b;
+        stroke-width: 1;
+        opacity: 0.16;
+      }
+      .side {
+        display: grid;
+        gap: 17px;
+        align-content: start;
+        align-items: start;
+      }
+      .section-card {
+        overflow: hidden;
+      }
+      .fleet-row {
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        cursor: pointer;
+      }
+      .fleet-row:last-child {
+        border-bottom: 0;
+      }
+      .fleet-row:hover,
+      .fleet-row.selected {
+        background: #202b24;
+      }
+      .drone-icon {
+        width: 27px;
+        height: 27px;
+        border-radius: 7px;
+        background: #27362c;
+        display: grid;
+        place-items: center;
+        color: var(--lime);
+        font-size: 13px;
+      }
+      .fleet-info {
+        min-width: 0;
+        flex: 1;
+      }
+      .fleet-info b {
+        font-size: 12px;
+        display: block;
+      }
+      .fleet-info small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .status-pill {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .ok {
+        color: var(--teal);
+      }
+      .risk {
+        color: var(--amber);
+      }
+      .down {
+        color: var(--red);
+      }
+      .battery {
+        width: 45px;
+        height: 5px;
+        border-radius: 3px;
+        background: #2c3830;
+        overflow: hidden;
+      }
+      .battery i {
+        display: block;
+        height: 100%;
+        background: var(--teal);
+        border-radius: 3px;
+      }
+      .battery i.warn {
+        background: var(--amber);
+      }
+      .health {
+        padding: 15px 16px 17px;
+      }
+      .health-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .health-top strong {
+        font-size: 23px;
+        font-weight: 500;
+      }
+      .health-top span {
+        color: var(--teal);
+        font-size: 10px;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: 76px 1fr 35px;
+        gap: 10px;
+        align-items: center;
+        margin: 11px 0;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .bar {
+        height: 5px;
+        background: #2c3830;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        background: var(--teal);
+        border-radius: 5px;
+      }
+      .bar i.warn {
+        background: var(--amber);
+      }
+      .bar-row em {
+        color: var(--text);
+        font-style: normal;
+        text-align: right;
+      }
+      .drone-preview {
+        height: 116px;
+        margin: -1px 0 16px;
+        border: 1px solid #31453a;
+        border-radius: 8px;
+        background: radial-gradient(
+          circle at 50% 45%,
+          #294331 0,
+          #18251e 43%,
+          #121a17 100%
+        );
+        position: relative;
+        overflow: hidden;
+      }
+      .drone-preview:before,
+      .drone-preview:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #b9e76918;
+      }
+      .drone-preview:before {
+        top: 30px;
+      }
+      .drone-preview:after {
+        top: 76px;
+      }
+      .drone-preview svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .drone-preview .drone-body {
+        fill: #b9e769;
+        stroke: #dff6a5;
+        stroke-width: 1;
+      }
+      .drone-preview .drone-arm {
+        stroke: #b9e769;
+        stroke-width: 4;
+        stroke-linecap: round;
+      }
+      .drone-preview .rotor {
+        fill: none;
+        stroke: #63dbc0;
+        stroke-width: 1.5;
+        stroke-dasharray: 3 3;
+      }
+      .drone-preview .camera {
+        fill: #7db7ef;
+        stroke: #d4e8ff;
+        stroke-width: 1;
+      }
+      .drone-tag {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        color: var(--lime);
+        font:
+          9px ui-monospace,
+          monospace;
+        letter-spacing: 0.12em;
+      }
+      .drone-alt {
+        position: absolute;
+        right: 10px;
+        bottom: 8px;
+        color: var(--muted);
+        font:
+          9px ui-monospace,
+          monospace;
+      }
+      .alert {
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 10px;
+      }
+      .alert:last-child {
+        border: 0;
+      }
+      .alert-mark {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--amber);
+        margin-top: 5px;
+        flex: none;
+        box-shadow: 0 0 7px var(--amber);
+      }
+      .alert b {
+        font-size: 11px;
+        font-weight: 600;
+        display: block;
+      }
+      .alert p {
+        font-size: 10px;
+        color: var(--muted);
+        margin: 3px 0 0;
+      }
+      .alert.critical .alert-mark {
+        background: var(--red);
+        box-shadow: 0 0 7px var(--red);
+      }
+      .bottom-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 17px;
+        margin-top: 17px;
+      }
+      .chart {
+        padding: 17px 18px;
+      }
+      .chart .card-head {
+        padding: 0;
+        height: auto;
+        border: 0;
+        margin: -2px -1px 13px;
+      }
+      .chart svg {
+        width: 100%;
+        height: 105px;
+        display: block;
+      }
+      .chart-note {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 5px;
+      }
+      .chart-note b {
+        color: var(--teal);
+        font-weight: 500;
+      }
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+        padding: 17px;
+      }
+      .action {
+        border: 1px solid var(--line);
+        background: #1b2520;
+        border-radius: 7px;
+        padding: 12px 10px;
+        text-align: left;
+      }
+      .action:hover {
+        border-color: #76975a;
+        background: #283625;
+      }
+      .action svg {
+        width: 18px;
+        height: 18px;
+        stroke: var(--lime);
+        fill: none;
+        stroke-width: 1.5;
+        margin-bottom: 8px;
+      }
+      .action b {
+        font-size: 11px;
+        display: block;
+      }
+      .action small {
+        font-size: 9px;
+        color: var(--muted);
+        display: block;
+        margin-top: 3px;
+      }
+      .mission-card {
+        margin-top: 17px;
+        overflow: hidden;
+      }
+      .mission-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1fr 1fr;
+      }
+      .mission-cell {
+        padding: 14px 16px;
+        border-right: 1px solid var(--line);
+      }
+      .mission-cell:last-child {
+        border: 0;
+      }
+      .mission-cell label {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 5px;
+      }
+      .mission-cell strong {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .mission-cell small {
+        display: block;
+        color: var(--teal);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .fleet-page {
+        display: none;
+      }
+      .fleet-page.open {
+        display: block;
+      }
+      .fleet-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+      }
+      .fleet-toolbar h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .fleet-toolbar small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .fleet-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 17px;
+      }
+      .fleet-table {
+        overflow: hidden;
+      }
+      .fleet-table .fleet-row {
+        padding: 16px 18px;
+      }
+      .track-card {
+        padding: 18px;
+      }
+      .track-card h3 {
+        font-size: 12px;
+        margin: 0 0 16px;
+      }
+      .track-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 11px;
+      }
+      .track-stat span {
+        color: var(--muted);
+      }
+      .track-stat strong {
+        font-weight: 500;
+      }
+      .fleet-note {
+        margin-top: 16px;
+        padding: 12px;
+        border: 1px solid #395443;
+        background: #1b2a21;
+        border-radius: 7px;
+        color: var(--teal);
+        font-size: 10px;
+      }
+      .health-page {
+        display: none;
+      }
+      .health-page.open {
+        display: block;
+      }
+      .health-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+      }
+      .health-toolbar h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .health-toolbar small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .health-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+      .health-unit {
+        padding: 17px;
+      }
+      .health-unit-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+      .health-unit-head b {
+        font-size: 13px;
+      }
+      .health-unit-head small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .health-score-chip {
+        font-size: 10px;
+        color: var(--teal);
+        border: 1px solid #356453;
+        border-radius: 5px;
+        padding: 5px 7px;
+      }
+      .health-score-chip.warn {
+        color: var(--amber);
+        border-color: #71572e;
+      }
+      .health-score-chip.alert {
+        color: var(--red);
+        border-color: #713936;
+      }
+      .health-meter {
+        height: 6px;
+        background: #2c3830;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 8px 0 15px;
+      }
+      .health-meter i {
+        display: block;
+        height: 100%;
+        background: var(--teal);
+        border-radius: 6px;
+      }
+      .health-meter i.warn {
+        background: var(--amber);
+      }
+      .health-meter i.alert {
+        background: var(--red);
+      }
+      .health-readings {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .reading {
+        background: #1b2520;
+        border-radius: 5px;
+        padding: 9px 7px;
+      }
+      .reading label {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        margin-bottom: 4px;
+      }
+      .reading strong {
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .health-status-line {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .health-status-line b {
+        font-weight: 500;
+        color: var(--teal);
+      }
+      .health-status-line b.warn {
+        color: var(--amber);
+      }
+      .health-status-line b.alert {
+        color: var(--red);
+      }
+      .geofence-page {
+        display: none;
+      }
+      .geofence-page.open {
+        display: block;
+      }
+      .geofence-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+      }
+      .geofence-toolbar h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .geofence-toolbar small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .geofence-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 17px;
+      }
+      .geofence-map {
+        min-height: 420px;
+        background: #121a17;
+        overflow: hidden;
+      }
+      .geofence-map svg {
+        width: 100%;
+        height: 100%;
+        min-height: 420px;
+        display: block;
+      }
+      .geofence-list {
+        overflow: hidden;
+      }
+      .zone-row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 15px 17px;
+        border-bottom: 1px solid var(--line);
+      }
+      .zone-row:last-child {
+        border-bottom: 0;
+      }
+      .zone-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 8px var(--teal);
+      }
+      .zone-dot.warn {
+        background: var(--amber);
+        box-shadow: 0 0 8px var(--amber);
+      }
+      .zone-info {
+        flex: 1;
+      }
+      .zone-info b {
+        display: block;
+        font-size: 12px;
+      }
+      .zone-info small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .zone-state {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--teal);
+      }
+      .zone-state.warn {
+        color: var(--amber);
+      }
+      .zone-toggle {
+        border: 1px solid var(--line);
+        background: #1b2520;
+        border-radius: 5px;
+        padding: 5px 7px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .zone-toggle.enabled {
+        color: var(--teal);
+        border-color: #356453;
+      }
+      .geofence-note {
+        margin: 15px 17px;
+        padding: 11px;
+        border: 1px solid #395443;
+        background: #1b2a21;
+        border-radius: 7px;
+        color: var(--teal);
+        font-size: 10px;
+      }
+      .camera-page {
+        display: none;
+      }
+      .camera-page.open {
+        display: block;
+      }
+      .controls-page {
+        display: none;
+      }
+      .controls-page.open {
+        display: block;
+      }
+      .controls-toolbar {
+        margin-bottom: 17px;
+      }
+      .controls-toolbar h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .controls-toolbar small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .controls-page .control-card {
+        max-width: 720px;
+      }
+      .virtual-flight {
+        max-width: 720px;
+        margin-bottom: 17px;
+        overflow: hidden;
+      }
+      .flight-stage {
+        position: relative;
+        height: clamp(220px, 38vw, 320px);
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 50% 45%, #254433 0, #172a20 45%, #111a16 100%);
+      }
+      .flight-stage::before {
+        position: absolute;
+        inset: -50%;
+        background-image:
+          linear-gradient(#85b18b12 1px, transparent 1px),
+          linear-gradient(90deg, #85b18b12 1px, transparent 1px);
+        background-size: 32px 32px;
+        content: "";
+        transform: perspective(260px) rotateX(52deg) scale(1.3);
+        transform-origin: center 60%;
+      }
+      .flight-stage svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .flight-boundary {
+        fill: #b9e76908;
+        stroke: #b9e7694d;
+        stroke-dasharray: 6 7;
+      }
+      .flight-drone-shadow {
+        fill: #05090780;
+        filter: blur(5px);
+      }
+      .flight-drone-arm {
+        fill: none;
+        stroke: #b9e769;
+        stroke-linecap: round;
+        stroke-width: 7;
+      }
+      .flight-drone-body {
+        fill: #d1e3b5;
+        stroke: #0b110d;
+        stroke-width: 3;
+      }
+      .flight-rotor {
+        fill: #132018;
+        stroke: #83d6a0;
+        stroke-width: 3;
+      }
+      .flight-prop {
+        stroke: #b8d8c0;
+        stroke-linecap: round;
+        stroke-width: 2;
+      }
+      .flight-drone-label {
+        fill: #eff8e8;
+        font: 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-anchor: middle;
+      }
+      .flight-drone-camera {
+        fill: #63dbc0;
+        stroke: #0c1712;
+        stroke-width: 2;
+      }
+      .flight-overlay {
+        position: absolute;
+        z-index: 1;
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        pointer-events: none;
+      }
+      .flight-overlay-top {
+        top: 12px;
+        left: 12px;
+      }
+      .flight-overlay-bottom {
+        right: 12px;
+        bottom: 12px;
+      }
+      .flight-chip {
+        padding: 5px 8px;
+        border: 1px solid #55726080;
+        border-radius: 4px;
+        background: #101914d9;
+        color: var(--teal);
+        font: 9px ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .flight-readouts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-top: 1px solid var(--line);
+      }
+      .flight-readout {
+        padding: 10px 12px;
+        border-right: 1px solid var(--line);
+      }
+      .flight-readout:last-child {
+        border-right: 0;
+      }
+      .flight-readout span {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        text-transform: uppercase;
+      }
+      .flight-readout b {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+      .camera-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+      }
+      .camera-toolbar h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .camera-toolbar small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .camera-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.8fr);
+        gap: 17px;
+        align-items: start;
+      }
+      .camera-card {
+        overflow: hidden;
+      }
+      .camera-preview {
+        position: relative;
+        min-height: 240px;
+        aspect-ratio: 16/9;
+        background: #080d0a;
+        display: grid;
+        place-items: center;
+      }
+      .camera-preview video {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+      }
+      .camera-preview canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .camera-placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 25px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .camera-placeholder[hidden],
+      .camera-warning[hidden] {
+        display: none;
+      }
+      .camera-actions {
+        display: flex;
+        gap: 9px;
+        padding: 14px 16px;
+      }
+      .camera-action {
+        border: 1px solid #56725e;
+        background: #243128;
+        border-radius: 6px;
+        padding: 8px 12px;
+        color: var(--lime);
+        font-size: 11px;
+      }
+      .camera-action.secondary {
+        border-color: var(--line);
+        background: var(--panel-2);
+        color: var(--text);
+      }
+      .camera-action:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+      .camera-settings {
+        padding: 17px;
+      }
+      .camera-count-label {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .camera-count {
+        font-size: 42px;
+        line-height: 1.2;
+        margin: 5px 0 17px;
+      }
+      .camera-setting {
+        display: grid;
+        gap: 7px;
+        margin: 13px 0;
+        font-size: 11px;
+      }
+      .camera-setting label {
+        color: var(--muted);
+      }
+      .camera-setting input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: #101713;
+        color: var(--text);
+        padding: 8px;
+        font: inherit;
+      }
+      .camera-status {
+        min-height: 34px;
+        color: var(--teal);
+        font-size: 10px;
+      }
+      .camera-warning {
+        margin-top: 12px;
+        padding: 11px;
+        border: 1px solid #71572e;
+        background: #302719;
+        border-radius: 6px;
+        color: var(--amber);
+        font-size: 11px;
+      }
+      .camera-privacy {
+        margin: 0;
+        padding: 13px 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+      @media (max-width: 650px) {
+        .camera-grid {
+          grid-template-columns: 1fr;
+        }
+        .camera-preview {
+          min-height: 190px;
+        }
+      }
+      .control-card {
+        overflow: hidden;
+      }
+      .control-note {
+        padding: 12px 16px;
+        color: var(--muted);
+        font-size: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .control-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 13px 16px;
+      }
+      .control-btn {
+        border: 1px solid var(--line);
+        background: #1b2520;
+        border-radius: 6px;
+        padding: 10px 9px;
+        text-align: left;
+        font-size: 10px;
+      }
+      .control-btn:hover,
+      .control-btn.active {
+        border-color: #76975a;
+        background: #283625;
+        color: var(--lime);
+      }
+      .control-btn b {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+      .control-btn small {
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .manual-control-panel {
+        margin: 0 16px 14px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #111815;
+      }
+      .manual-control-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .manual-control-head b {
+        font-size: 11px;
+      }
+      .arm-button {
+        border: 1px solid #71572e;
+        border-radius: 5px;
+        padding: 7px 12px;
+        background: #302719;
+        color: var(--amber);
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .arm-button[aria-pressed="true"] {
+        border-color: #76975a;
+        background: #283625;
+        color: var(--lime);
+      }
+      .manual-control-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .manual-control-field {
+        min-width: 0;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .manual-control-field header {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .manual-control-field output {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+      .joystick {
+        position: relative;
+        width: min(100%, 190px);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid #3b5145;
+        border-radius: 50%;
+        background:
+          linear-gradient(90deg, transparent calc(50% - 1px), #304237 calc(50% - 1px), #304237 calc(50% + 1px), transparent calc(50% + 1px)),
+          linear-gradient(transparent calc(50% - 1px), #304237 calc(50% - 1px), #304237 calc(50% + 1px), transparent calc(50% + 1px)),
+          radial-gradient(circle, #24342a 0 2px, transparent 3px),
+          #151e19;
+        touch-action: none;
+        cursor: crosshair;
+        user-select: none;
+      }
+      .joystick:focus-visible {
+        outline: 2px solid var(--teal);
+        outline-offset: 3px;
+      }
+      .joystick.disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+      .joystick-stick {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        border: 2px solid #b9e769;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #536d3a, #263725 72%);
+        box-shadow: 0 3px 12px #0009, inset 0 0 0 4px #1b281d;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+      .joystick.disabled .joystick-stick {
+        border-color: #68746a;
+        background: radial-gradient(circle at 35% 30%, #465149, #252d28 72%);
+      }
+      .joystick-hint {
+        margin: 8px 0 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      @media (max-width: 420px) {
+        .manual-control-grid {
+          gap: 10px;
+        }
+        .joystick-stick {
+          width: 40px;
+          height: 40px;
+        }
+      }
+      .control-response {
+        margin: 12px 0 0;
+        padding: 10px;
+        overflow-x: auto;
+        border-radius: 5px;
+        background: #0b100e;
+        color: var(--teal);
+        font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .toast {
+        position: fixed;
+        right: 25px;
+        bottom: 25px;
+        background: #27362c;
+        border: 1px solid #6b8c54;
+        color: var(--lime);
+        border-radius: 7px;
+        padding: 11px 14px;
+        font-size: 11px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 0.25s;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      @media (max-width: 650px) {
+        .map-controls {
+          top: 12px;
+          left: 12px;
+          right: 12px;
+          max-width: none;
+          overflow-x: auto;
+          flex-wrap: nowrap;
+          justify-content: flex-start;
+          padding-bottom: 2px;
+        }
+        .map-controls button {
+          flex: 0 0 auto;
+          padding: 5px 7px;
+          font-size: 9px;
+        }
+        .gps-readout {
+          top: 52px;
+          left: 12px;
+          font-size: 8px;
+        }
+        .night-stage {
+          padding: 12px;
+        }
+        .night-stage .night-view {
+          left: auto;
+          right: auto;
+          top: auto;
+          bottom: auto;
+          height: 170px;
+        }
+        .night-stage .night-toggle {
+          left: auto;
+          right: 20px;
+          top: 21px;
+        }
+        .map-hud {
+          top: 72px;
+          right: 12px;
+        }
+        .map-scale {
+          bottom: 18px;
+          right: 12px;
+        }
+      }
+      .card {
+        box-shadow: 0 10px 28px #00000018;
+      }
+      .kpi-value {
+        font-variant-numeric: tabular-nums;
+      }
+      .map-card {
+        box-shadow: 0 14px 34px #00000030;
+      }
+      .map-wrap {
+        background: radial-gradient(
+          circle at 55% 25%,
+          #1d3328 0,
+          #121a17 52%,
+          #0c1210 100%
+        );
+      }
+      .map-controls button,
+      .map-hud button,
+      .night-toggle {
+        backdrop-filter: blur(8px);
+      }
+      .top-actions button {
+        transition:
+          background 0.2s,
+          border-color 0.2s,
+          transform 0.2s;
+      }
+      .top-actions button:hover {
+        transform: translateY(-1px);
+      }
+      .fleet-row,
+      .control-btn,
+      .action,
+      .zone-row {
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .night-view {
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .night-view:not(.off) {
+        animation: feed-in 0.35s ease-out;
+      }
+      @keyframes feed-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 1050px) {
+        .side {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+      }
+      @media (max-width: 1050px) {
+        .app {
+          grid-template-columns: 72px 1fr;
+        }
+        .sidebar {
+          padding: 22px 10px;
+        }
+        .brand {
+          margin: 0 auto 42px;
+        }
+        .brand div:not(.brand-mark),
+        .nav-label,
+        .nav button span,
+        .sidebar-bottom p,
+        .sim-badge {
+          display: none;
+        }
+        .nav button {
+          justify-content: center;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          grid-template-columns: 1fr;
+        }
+        .bottom-grid {
+          grid-template-columns: 1fr;
+        }
+        .mission-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .mission-cell:nth-child(2) {
+          border-right: 0;
+        }
+        .fleet-grid {
+          grid-template-columns: 1fr;
+        }
+        .health-grid {
+          grid-template-columns: 1fr;
+        }
+        .map-card {
+          min-height: 500px;
+        }
+      }
+      @media (max-width: 650px) {
+        .content {
+          padding: 20px 15px;
+        }
+        .topbar {
+          display: block;
+        }
+        .top-actions {
+          margin-top: 17px;
+        }
+        .kpis {
+          grid-template-columns: 1fr 1fr;
+        }
+        .side {
+          grid-template-columns: 1fr;
+        }
+        .map-wrap {
+          height: 410px;
+        }
+        .map-card {
+          min-height: 464px;
+        }
+        .actions {
+          grid-template-columns: 1fr;
+        }
+        .mission-grid {
+          grid-template-columns: 1fr;
+        }
+        .mission-cell {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .mission-cell:last-child {
+          border-bottom: 0;
+        }
+        .health-readings {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .mission-cell:last-child {
+          border-bottom: 0;
+        }
+        .topbar h1 {
+          font-size: 23px;
+        }
+        .flight-readouts {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .flight-readout:nth-child(2) {
+          border-right: 0;
+        }
+        .flight-readout:nth-child(-n + 2) {
+          border-bottom: 1px solid var(--line);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">✦</div>
+          <div><b>GOD'S EYE</b><small>field intelligence</small></div>
+        </div>
+        <div class="nav-label">Workspace</div>
+        <nav class="nav">
+          <button class="active" data-tab="overview">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" /></svg
+            ><span>Mission overview</span>
+          </button>
+            <button data-tab="controls">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 7h9m4 0h3M4 17h3m4 0h9" />
+                <circle cx="15" cy="7" r="2" />
+                <circle cx="9" cy="17" r="2" /></svg
+              ><span>Drone controls</span>
+            </button>
+            <button data-tab="fleet">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 12h16M12 4v16M6 6l12 12M18 6 6 18" /></svg
+            ><span>Fleet tracking</span>
+          </button>
+          <button data-tab="health">
+            <svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6" /></svg
+            ><span>Health monitor</span>
+          </button>
+          <button data-tab="geofences">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11Z" />
+              <circle cx="12" cy="10" r="2.3" /></svg
+            ><span>Geofences</span>
+          </button>
+          <button data-tab="camera">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="6" width="13" height="12" rx="2" />
+              <path d="m16 10 5-3v10l-5-3" /></svg
+            ><span>People count</span>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="sim-badge"><span></span> TRAINING SIMULATION</div>
+          <p>Telemetry is synthetic. No real vehicle commands are connected.</p>
+        </div>
+      </aside>
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">BORDER SECTOR 07 · TRAINING RANGE</div>
+            <h1>Mission overview</h1>
+            <p>
+              Monitor sector position, airspace safety, and vehicle readiness.
+            </p>
+          </div>
+          <div class="top-actions">
+            <div class="secure"><i></i> Local link secure</div>
+            <button class="icon-btn" id="refresh">↻ Refresh</button
+            ><button class="outline-btn" id="export">Export brief</button>
+          </div>
+        </header>
+        <section class="kpis">
+          <div class="card kpi">
+            <div class="kpi-label">Active drones</div>
+            <div class="kpi-value" id="active-count">04</div>
+            <div class="kpi-meta">all systems reporting</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-label">Area monitored</div>
+            <div class="kpi-value">
+              86.4
+              <small style="font-size: 13px; color: var(--muted)">km²</small>
+            </div>
+            <div class="kpi-meta">+4.2% from last sweep</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-label">Fleet readiness</div>
+            <div class="kpi-value">
+              94<small style="font-size: 14px; color: var(--muted)">%</small>
+            </div>
+            <div class="kpi-meta">within mission threshold</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-label">Risk assessment</div>
+            <div class="kpi-value" style="color: var(--amber)">LOW</div>
+            <div class="kpi-meta warn">2 advisories · review pending</div>
+          </div>
+        </section>
+        <div class="grid">
+          <div class="left-column">
+            <section class="card map-card">
+              <div class="card-head">
+                <h2>LIVE SECTOR MAP</h2>
+                <small id="map-time">12 SEP 2026 · 15:00:42 IST</small>
+              </div>
+              <div class="map-wrap">
+                <div class="map-label n">N 28° 37' 12" · E 77° 13' 48"</div>
+                <div class="map-label s">GRID REF: BRAVO-07</div>
+                <div class="gps-readout" id="gps-readout">
+                  GPS LOCK · ±1.2M · 14 SAT
+                </div>
+                <div class="map-legend">
+                  <span style="--c: var(--lime)">vehicle</span
+                  ><span style="--c: var(--teal)">route</span
+                  ><span style="--c: var(--amber)">advisory</span>
+                </div>
+                <div class="map-controls">
+                  <button class="active" data-layer="drones">DRONES</button
+                  ><button data-layer="zones">ZONES</button
+                  ><button data-layer="routes">ROUTES</button
+                  ><button id="area-mode">SELECT AREA</button
+                  ><button id="threat-mode">SIMULATE THREAT</button>
+                </div>
+                <div class="map-hud">
+                  <div class="compass">N</div>
+                  <button id="zoom-in">+</button
+                  ><button id="zoom-out">−</button>
+                </div>
+                <div class="map-scale">2 km</div>
+                <svg
+                  class="map-svg"
+                  viewBox="0 0 800 495"
+                  role="img"
+                  aria-label="Simulated sector map"
+                >
+                  <path
+                    class="water"
+                    d="M0 115 C90 88 144 110 210 94S324 76 390 105 502 126 568 100 710 74 800 91V0H0Z"
+                  />
+                  <path
+                    class="contour"
+                    d="M40 292c74-56 147-54 218-11s113 41 181-7 130-54 216-10 91 39 130 22M38 310c75-50 140-43 207-3s122 48 193 0 123-52 202-7 106 47 153 22M375 80c37 25 42 56 19 90s-18 61 20 94 45 57 16 102"
+                  />
+                  <path
+                    class="road major"
+                    d="M-20 430 C104 388 137 329 239 318S389 338 468 280s144-91 352-102"
+                  />
+                  <path
+                    class="road"
+                    d="M90 -10c51 90 68 155 44 222s-12 140 50 303M548 -10c-6 73 26 128 94 168s88 113 78 337M0 205c93 4 156 31 231 82s157 52 263 11 211-49 326-35"
+                  />
+                  <path
+                    d="M30 370 C130 315 105 215 210 220S280 115 370 155s102-69 190-24 90-52 210-66M80 432c95-63 154-15 211-77s120-40 173-102 140-12 240-111"
+                    fill="none"
+                    stroke="#32483b"
+                    stroke-width="26"
+                    opacity=".45"
+                  />
+                  <path
+                    d="M30 370 C130 315 105 215 210 220S280 115 370 155s102-69 190-24 90-52 210-66M80 432c95-63 154-15 211-77s120-40 173-102 140-12 240-111"
+                    fill="none"
+                    stroke="#496351"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M175 75 L245 58 315 92 300 177 225 188 159 141Z"
+                    class="zone"
+                  />
+                  <path
+                    d="M475 255 L570 222 666 268 635 366 530 383 458 321Z"
+                    class="zone"
+                  />
+                  <text
+                    x="191"
+                    y="126"
+                    fill="#819582"
+                    font-size="10"
+                    letter-spacing="2"
+                  >
+                    NORTH RANGE
+                  </text>
+                  <text
+                    x="512"
+                    y="303"
+                    fill="#819582"
+                    font-size="10"
+                    letter-spacing="2"
+                  >
+                    EAST RANGE
+                  </text>
+                  <path
+                    class="route"
+                    d="M118 346 C214 282 248 288 327 225S460 206 545 287 642 304 700 190"
+                  />
+                  <path class="route" d="M215 400C289 357 334 360 417 317" />
+                  <g
+                    class="drone selected"
+                    data-drone="AX-01"
+                    transform="translate(327 225)"
+                  >
+                    <circle r="6" />
+                    <text x="11" y="-10">AX-01</text>
+                  </g>
+                  <g
+                    class="drone"
+                    data-drone="AX-02"
+                    transform="translate(545 287)"
+                  >
+                    <circle r="6" />
+                    <text x="11" y="-10">AX-02</text>
+                  </g>
+                  <g
+                    class="drone alert"
+                    data-drone="AX-03"
+                    transform="translate(215 400)"
+                  >
+                    <circle r="6" />
+                    <text x="11" y="-10">AX-03</text>
+                  </g>
+                  <g
+                    class="drone"
+                    data-drone="AX-04"
+                    transform="translate(700 190)"
+                  >
+                    <circle r="6" />
+                    <text x="-42" y="-10">AX-04</text>
+                  </g>
+                  <g fill="#b9e769" opacity=".75">
+                    <circle cx="118" cy="346" r="3" />
+                    <circle cx="417" cy="317" r="3" />
+                    <circle cx="642" cy="304" r="3" />
+                  </g>
+                  <g id="review-area" opacity="0" pointer-events="none">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="1"
+                      height="1"
+                      rx="4"
+                      fill="#7db7ef18"
+                      stroke="#7db7ef"
+                      stroke-dasharray="6 5"
+                    />
+                    <text
+                      x="0"
+                      y="0"
+                      fill="#b7d7ff"
+                      font-size="10"
+                      letter-spacing="1"
+                    >
+                      REVIEW AREA
+                    </text>
+                  </g>
+                  <g id="threat-area" opacity="0" pointer-events="none">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="1"
+                      height="1"
+                      rx="4"
+                      fill="#ee786e18"
+                      stroke="#ee786e"
+                      stroke-dasharray="5 4"
+                    />
+                    <text
+                      x="0"
+                      y="0"
+                      fill="#ffaaa3"
+                      font-size="10"
+                      letter-spacing="1"
+                    >
+                      SIMULATED THREAT
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </section>
+            <section class="card night-card">
+              <div class="card-head">
+                <h2>NIGHT VIEW MAP</h2>
+                <small>PASSIVE IR · AX-01 · LIVE</small>
+              </div>
+              <div class="night-stage">
+                <button class="night-toggle" id="night-toggle">
+                  NIGHT VIEW
+                </button>
+                <div class="night-view" id="night-view">
+                  <div class="night-head">
+                    <span>NIGHT VIEW MAP · AX-01</span><span>LIVE</span>
+                  </div>
+                  <canvas
+                    class="night-canvas"
+                    id="night-canvas"
+                    width="620"
+                    height="356"
+                  ></canvas>
+                  <div class="night-meta">
+                    PASSIVE IR · 850nm · GAIN AUTO · LOWER MAP DOCK
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <aside class="side">
+            <section class="card section-card">
+              <div class="card-head">
+                <h2>LIVE VEHICLE STATUS</h2>
+                <small>04 UNITS</small>
+              </div>
+              <div id="fleet-list">
+                <div class="fleet-row selected" data-drone-row="AX-01">
+                  <div class="drone-icon">⌁</div>
+                  <div class="fleet-info">
+                    <b>AX-01 · Kestrel</b><small>28.61° N, 77.21° E</small>
+                  </div>
+                  <div>
+                    <div class="status-pill ok">In flight</div>
+                    <div class="battery"><i style="width: 82%"></i></div>
+                  </div>
+                </div>
+                <div class="fleet-row" data-drone-row="AX-02">
+                  <div class="drone-icon">⌁</div>
+                  <div class="fleet-info">
+                    <b>AX-02 · Kestrel</b><small>28.58° N, 77.28° E</small>
+                  </div>
+                  <div>
+                    <div class="status-pill ok">In flight</div>
+                    <div class="battery"><i style="width: 67%"></i></div>
+                  </div>
+                </div>
+                <div class="fleet-row" data-drone-row="AX-03">
+                  <div class="drone-icon">⌁</div>
+                  <div class="fleet-info">
+                    <b>AX-03 · Finch</b><small>28.55° N, 77.19° E</small>
+                  </div>
+                  <div>
+                    <div class="status-pill risk">Advisory</div>
+                    <div class="battery">
+                      <i class="warn" style="width: 31%"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="fleet-row" data-drone-row="AX-04">
+                  <div class="drone-icon">⌁</div>
+                  <div class="fleet-info">
+                    <b>AX-04 · Finch</b><small>28.67° N, 77.31° E</small>
+                  </div>
+                  <div>
+                    <div class="status-pill ok">In flight</div>
+                    <div class="battery"><i style="width: 91%"></i></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="card control-card">
+              <div class="card-head">
+                <h2>DRONE CONTROLS</h2>
+                <small>SIMULATOR ONLY</small>
+              </div>
+              <div class="control-note">
+                Selected: <b id="control-drone">AX-01 · Kestrel</b> · safe
+                training controls
+              </div>
+              <div class="control-grid">
+                <button class="control-btn" data-control="Hold position">
+                  <b>Hold position</b
+                  ><small>Pause route simulation</small></button
+                ><button class="control-btn" data-control="Resume route">
+                  <b>Resume route</b
+                  ><small>Continue planned path</small></button
+                ><button class="control-btn" data-control="Return to base">
+                  <b>Return to base</b
+                  ><small>Simulate safe return</small></button
+                ><button class="control-btn" data-control="Emergency landing">
+                  <b>Emergency landing</b
+                  ><small>Simulate safety descent</small></button
+                ><button class="control-btn" data-control="Waypoint preview">
+                  <b>Waypoint preview</b
+                  ><small>Review next route point</small></button
+                ><button class="control-btn" data-control="Area scan">
+                  <b>Area scan</b
+                  ><small>Passive inspection sweep</small></button
+                ><button class="control-btn" data-control="Camera view">
+                  <b>Camera view</b
+                  ><small>Open passive sensor feed</small></button
+                ><button class="control-btn" data-control="Sensor snapshot">
+                  <b>Sensor snapshot</b
+                  ><small>Capture telemetry frame</small></button
+                ><button class="control-btn" data-control="Low-power mode">
+                  <b>Low-power mode</b><small>Reduce simulated draw</small>
+                </button>
+              </div>
+              <div class="manual-control-panel">
+                <div class="manual-control-head">
+                  <b>MANUAL FLIGHT · SIMULATED</b>
+                  <button
+                    class="arm-button"
+                    id="manual-arm"
+                    type="button"
+                    aria-pressed="false"
+                  >
+                    ARM
+                  </button>
+                </div>
+                <div class="manual-control-grid">
+                  <div class="manual-control-field">
+                    <header>
+                      <span>Throttle · Yaw</span>
+                      <output id="throttle-value" aria-live="polite"
+                        >0% · 0°</output
+                      >
+                    </header>
+                    <div
+                      class="joystick"
+                      id="throttle-joystick"
+                      role="group"
+                      tabindex="0"
+                      aria-label="Throttle and yaw joystick"
+                      aria-description="Move up or down for throttle and left or right for yaw. Use arrow keys when focused."
+                      aria-disabled="true"
+                    >
+                      <span class="joystick-stick" aria-hidden="true"></span>
+                    </div>
+                    <p class="joystick-hint">↑↓ THROTTLE · ←→ YAW</p>
+                  </div>
+                  <div class="manual-control-field">
+                    <header>
+                      <span>Pitch · Roll</span>
+                      <output id="pitch-value" aria-live="polite"
+                        >0° · 0°</output
+                      >
+                    </header>
+                    <div
+                      class="joystick"
+                      id="pitch-joystick"
+                      role="group"
+                      tabindex="0"
+                      aria-label="Pitch and roll joystick"
+                      aria-description="Move up or down for pitch and left or right for roll. Use arrow keys when focused."
+                      aria-disabled="true"
+                    >
+                      <span class="joystick-stick" aria-hidden="true"></span>
+                    </div>
+                    <p class="joystick-hint">↑↓ PITCH · ←→ ROLL</p>
+                  </div>
+                </div>
+                <pre
+                  class="control-response"
+                  id="control-response"
+                  aria-live="polite"
+                ></pre>
+              </div>
+            </section>
+            <section class="card section-card">
+              <div class="card-head">
+                <h2 id="health-title">SELECTED VEHICLE · AX-01</h2>
+                <small>HEALTH SCORE</small>
+              </div>
+              <div class="health">
+                <div class="drone-preview">
+                  <span class="drone-tag" id="preview-tag"
+                    >LIVE VEHICLE FEED · AX-01</span
+                  ><svg
+                    viewBox="0 0 360 116"
+                    aria-label="Illustrated Kestrel drone preview"
+                  >
+                    <ellipse class="rotor" cx="82" cy="55" rx="34" ry="22" />
+                    <ellipse class="rotor" cx="278" cy="55" rx="34" ry="22" />
+                    <path
+                      class="drone-arm"
+                      d="M112 55H248M145 55 119 30M215 55l26-25"
+                    />
+                    <path class="drone-arm" d="M145 55 119 80M215 55l26 25" />
+                    <path
+                      class="drone-body"
+                      d="M155 42 180 35 205 42 215 62 196 75 164 75 145 62Z"
+                    />
+                    <path d="M164 47h32l8 12-8 8h-32l-8-8Z" fill="#17231c" />
+                    <circle class="camera" cx="180" cy="71" r="6" />
+                    <circle cx="82" cy="55" r="4" fill="#63dbc0" />
+                    <circle cx="278" cy="55" r="4" fill="#63dbc0" /></svg
+                  ><span class="drone-alt" id="preview-alt"
+                    >ALT 142m · SPD 38 km/h</span
+                  >
+                </div>
+                <div class="health-top">
+                  <strong id="health-score"
+                    >96<span style="font-size: 12px; color: var(--muted)">
+                      / 100</span
+                    ></strong
+                  ><span id="health-status">● NOMINAL</span>
+                </div>
+                <div class="bar-row">
+                  <span>Battery</span>
+                  <div class="bar">
+                    <i id="health-battery" style="width: 82%"></i>
+                  </div>
+                  <em id="health-battery-value">82%</em>
+                </div>
+                <div class="bar-row">
+                  <span>Signal link</span>
+                  <div class="bar">
+                    <i id="health-signal" style="width: 98%"></i>
+                  </div>
+                  <em id="health-signal-value">98%</em>
+                </div>
+                <div class="bar-row">
+                  <span>GPS accuracy</span>
+                  <div class="bar">
+                    <i id="health-gps" style="width: 94%"></i>
+                  </div>
+                  <em id="health-gps-value">±1.2m</em>
+                </div>
+                <div class="bar-row">
+                  <span>Motor temp.</span>
+                  <div class="bar">
+                    <i id="health-temp" class="warn" style="width: 61%"></i>
+                  </div>
+                  <em id="health-temp-value">61°C</em>
+                </div>
+              </div>
+            </section>
+            <section class="card section-card">
+              <div class="card-head">
+                <h2>SAFETY ADVISORIES</h2>
+                <small id="alert-count">LAST 30 MIN</small>
+              </div>
+              <div id="advisory-list">
+                <div class="alert">
+                  <div class="alert-mark"></div>
+                  <div>
+                    <b>AX-03 battery reserve is low</b>
+                    <p>Return-to-base threshold in 18 min at current draw.</p>
+                  </div>
+                </div>
+                <div class="alert critical">
+                  <div class="alert-mark"></div>
+                  <div>
+                    <b>East Range geofence update</b>
+                    <p>Review temporary exclusion zone before next sweep.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+        <div class="bottom-grid">
+          <section class="card chart">
+            <div class="card-head">
+              <h2>SECTOR ACTIVITY · LAST 6 HOURS</h2>
+              <small>TELEMETRY PINGS</small>
+            </div>
+            <svg viewBox="0 0 600 105" preserveAspectRatio="none">
+              <path
+                d="M0 84L38 74 76 80 114 56 152 62 190 48 228 54 266 31 304 43 342 35 380 54 418 47 456 61 494 38 532 45 570 20 600 27V105H0Z"
+                fill="#63dbc01a"
+              />
+              <path
+                d="M0 84L38 74 76 80 114 56 152 62 190 48 228 54 266 31 304 43 342 35 380 54 418 47 456 61 494 38 532 45 570 20 600 27"
+                fill="none"
+                stroke="#63dbc0"
+                stroke-width="2"
+              />
+              <path
+                d="M0 92H600M0 63H600M0 34H600"
+                stroke="#718a781a"
+                stroke-dasharray="3 5"
+              />
+            </svg>
+            <div class="chart-note">
+              <span>09:00</span><span>12:00</span><b>Current · 428 pings/min</b
+              ><span>15:00</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-head">
+              <h2>QUICK ACTIONS</h2>
+              <small>SIMULATOR ONLY</small>
+            </div>
+            <div class="actions">
+              <button class="action" data-action="Run health check">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 12h4l2-6 4 12 2-6h4" /></svg
+                ><b>Run health check</b><small>Poll all vehicles</small></button
+              ><button class="action" data-action="Mark advisory reviewed">
+                <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg
+                ><b>Review advisories</b
+                ><small>Acknowledge alerts</small></button
+              ><button class="action" data-action="Open mission log">
+                <svg viewBox="0 0 24 24">
+                  <path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4" /></svg
+                ><b>Mission log</b><small>View event history</small>
+              </button>
+            </div>
+          </section>
+        </div>
+        <section class="card mission-card">
+          <div class="card-head">
+            <h2>CURRENT INSPECTION TASK</h2>
+            <small id="task-state">READY FOR ASSIGNMENT</small>
+          </div>
+          <div class="mission-grid">
+            <div class="mission-cell">
+              <label>Task</label><strong id="task-name">No area selected</strong
+              ><small id="task-note"
+                >Use SELECT AREA or SIMULATE THREAT on the map</small
+              >
+            </div>
+            <div class="mission-cell">
+              <label>Assigned vehicle</label
+              ><strong id="task-drone">AX-01 · Kestrel</strong
+              ><small>Selected fleet unit</small>
+            </div>
+            <div class="mission-cell">
+              <label>Sensor package</label
+              ><strong id="task-sensors">EO / IR + air quality</strong
+              ><small>Passive observation only</small>
+            </div>
+            <div class="mission-cell">
+              <label>Safety gate</label
+              ><strong id="task-safety" style="color: var(--teal)">CLEAR</strong
+              ><small id="task-safety-note">Geofence check passed</small>
+            </div>
+          </div>
+        </section>
+        <section class="fleet-page" id="fleet-page">
+          <div class="fleet-toolbar">
+            <div>
+              <h2>Fleet tracking</h2>
+              <small>Live simulated positions · 4 vehicles reporting</small>
+            </div>
+            <button class="outline-btn" id="center-fleet">
+              Center all vehicles
+            </button>
+          </div>
+          <div class="fleet-grid">
+            <section class="card fleet-table">
+              <div class="card-head">
+                <h2>TRACKED VEHICLES</h2>
+                <small>POSITION STREAM</small>
+              </div>
+              <div class="fleet-row selected" data-drone-row="AX-01">
+                <div class="drone-icon">⌁</div>
+                <div class="fleet-info">
+                  <b>AX-01 · Kestrel</b
+                  ><small>28.61° N, 77.21° E · 142m · 38 km/h</small>
+                </div>
+                <div>
+                  <div class="status-pill ok">In flight</div>
+                  <div class="battery"><i style="width: 82%"></i></div>
+                </div>
+              </div>
+              <div class="fleet-row" data-drone-row="AX-02">
+                <div class="drone-icon">⌁</div>
+                <div class="fleet-info">
+                  <b>AX-02 · Kestrel</b
+                  ><small>28.58° N, 77.28° E · 118m · 31 km/h</small>
+                </div>
+                <div>
+                  <div class="status-pill ok">In flight</div>
+                  <div class="battery"><i style="width: 67%"></i></div>
+                </div>
+              </div>
+              <div class="fleet-row" data-drone-row="AX-03">
+                <div class="drone-icon">⌁</div>
+                <div class="fleet-info">
+                  <b>AX-03 · Finch</b
+                  ><small>28.55° N, 77.19° E · 96m · 24 km/h</small>
+                </div>
+                <div>
+                  <div class="status-pill risk">Advisory</div>
+                  <div class="battery">
+                    <i class="warn" style="width: 31%"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="fleet-row" data-drone-row="AX-04">
+                <div class="drone-icon">⌁</div>
+                <div class="fleet-info">
+                  <b>AX-04 · Finch</b
+                  ><small>28.67° N, 77.31° E · 164m · 42 km/h</small>
+                </div>
+                <div>
+                  <div class="status-pill ok">In flight</div>
+                  <div class="battery"><i style="width: 91%"></i></div>
+                </div>
+              </div>
+            </section>
+            <section class="card track-card">
+              <h3>TRACKING SUMMARY</h3>
+              <div class="track-stat">
+                <span>Position updates</span><strong>Every 2 sec</strong>
+              </div>
+              <div class="track-stat">
+                <span>GPS quality</span
+                ><strong style="color: var(--teal)">Excellent · ±1.2m</strong>
+              </div>
+              <div class="track-stat">
+                <span>Link coverage</span><strong>98.7%</strong>
+              </div>
+              <div class="track-stat">
+                <span>Active route</span><strong>Bravo-07 patrol</strong>
+              </div>
+              <div class="fleet-note">
+                ● All vehicles are inside approved training airspace.
+              </div>
+            </section>
+          </div>
+        </section>
+        <section class="health-page" id="health-page">
+          <div class="health-toolbar">
+            <div>
+              <h2>Health monitor</h2>
+              <small
+                >Per-vehicle sensor diagnostics · last poll
+                <span id="health-poll-time">just now</span></small
+              >
+            </div>
+            <button class="outline-btn" id="refresh-health">
+              Run fleet health check
+            </button>
+          </div>
+          <div class="health-grid" id="health-grid"></div>
+        </section>
+        <section class="geofence-page" id="geofence-page">
+          <div class="geofence-toolbar">
+            <div>
+              <h2>Geofences</h2>
+              <small
+                >Training-airspace boundaries and inspection-only zones</small
+              >
+            </div>
+            <button class="outline-btn" id="draw-geofence">
+              Draw inspection zone
+            </button>
+          </div>
+          <div class="geofence-grid">
+            <section class="card geofence-map">
+              <svg viewBox="0 0 700 420" aria-label="Geofence map">
+                <path
+                  d="M0 90c110-35 174 22 263-8s169-18 240 12 126 19 197-14v340H0Z"
+                  fill="#17383a"
+                />
+                <path
+                  d="M0 90c110-35 174 22 263-8s169-18 240 12 126 19 197-14M35 330c85-76 165-62 240-12s153 43 235-15 111-48 164-21"
+                  fill="none"
+                  stroke="#47736b"
+                  opacity=".7"
+                />
+                <path
+                  d="M70 65 255 40 335 140 260 242 85 210Z"
+                  fill="#b9e7690b"
+                  stroke="#b9e769"
+                  stroke-dasharray="7 5"
+                />
+                <path
+                  d="M385 185 590 145 650 310 460 370 350 290Z"
+                  fill="#efbd6b0b"
+                  stroke="#efbd6b"
+                  stroke-dasharray="7 5"
+                />
+                <text
+                  x="112"
+                  y="150"
+                  fill="#b9e769"
+                  font-size="11"
+                  letter-spacing="2"
+                >
+                  NORTH RANGE · ACTIVE
+                </text>
+                <text
+                  x="423"
+                  y="265"
+                  fill="#efbd6b"
+                  font-size="11"
+                  letter-spacing="2"
+                >
+                  EAST RANGE · ADVISORY
+                </text>
+                <circle cx="300" cy="180" r="6" fill="#b9e769" />
+                <circle cx="520" cy="240" r="6" fill="#efbd6b" />
+              </svg>
+            </section>
+            <section class="card geofence-list">
+              <div class="card-head">
+                <h2>BOUNDARY RULES</h2>
+                <small>3 ZONES</small>
+              </div>
+              <div class="zone-row">
+                <span class="zone-dot"></span>
+                <div class="zone-info">
+                  <b>North Range</b><small>Training corridor · 12.4 km²</small>
+                </div>
+                <span class="zone-state">Active</span
+                ><button class="zone-toggle enabled">ON</button>
+              </div>
+              <div class="zone-row">
+                <span class="zone-dot warn"></span>
+                <div class="zone-info">
+                  <b>East Range</b
+                  ><small>Temporary restriction · 8.1 km²</small>
+                </div>
+                <span class="zone-state warn">Review</span
+                ><button class="zone-toggle enabled">ON</button>
+              </div>
+              <div class="zone-row">
+                <span class="zone-dot"></span>
+                <div class="zone-info">
+                  <b>Base perimeter</b><small>Return corridor · 4.6 km²</small>
+                </div>
+                <span class="zone-state">Active</span
+                ><button class="zone-toggle enabled">ON</button>
+              </div>
+              <div class="geofence-note">
+                ● Boundary checks running · all vehicles currently within
+                approved airspace.
+              </div>
+            </section>
+          </div>
+        </section>
+        <section class="camera-page" id="camera-page">
+          <div class="camera-toolbar">
+            <div>
+              <h2>Camera people count</h2>
+              <small
+                >Anonymous person detection · processed locally in this
+                browser</small
+              >
+            </div>
+          </div>
+          <div class="camera-grid">
+            <section class="card camera-card">
+              <div class="card-head">
+                <h2>CAMERA FEED</h2>
+                <small>NO VIDEO RECORDING</small>
+              </div>
+              <div class="camera-preview">
+                <video
+                  id="camera-video"
+                  autoplay
+                  muted
+                  playsinline
+                  aria-label="Live camera preview"
+                ></video>
+                <canvas id="camera-overlay" aria-hidden="true"></canvas>
+                <div class="camera-placeholder" id="camera-placeholder">
+                  Camera is off. Start the camera when you are ready.
+                </div>
+              </div>
+              <div class="camera-actions">
+                <button class="camera-action" id="camera-start">
+                  Start camera
+                </button>
+                <button
+                  class="camera-action secondary"
+                  id="camera-stop"
+                  disabled
+                >
+                  Stop camera
+                </button>
+              </div>
+              <p class="camera-privacy">
+                Frames are analyzed in memory and are not uploaded or saved. The
+                detector model downloads from jsDelivr and TensorFlow Hub on
+                first use. This estimates visible people only; it does not
+                identify anyone.
+              </p>
+            </section>
+            <aside class="card camera-settings">
+              <div class="camera-count-label">People detected</div>
+              <div class="camera-count" id="camera-count" aria-live="polite">
+                —
+              </div>
+              <div class="camera-setting">
+                <label for="crowd-threshold">Crowding alert threshold</label>
+                <input
+                  id="crowd-threshold"
+                  type="number"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value="5"
+                />
+              </div>
+              <div
+                class="camera-status"
+                id="camera-status"
+                role="status"
+                aria-live="polite"
+              >
+                Camera is off.
+              </div>
+              <div
+                class="camera-warning"
+                id="camera-warning"
+                role="alert"
+                hidden
+              ></div>
+            </aside>
+          </div>
+        </section>
+        <section class="controls-page" id="controls-page">
+          <section class="card virtual-flight">
+            <div class="card-head">
+              <h2>VIRTUAL FLIGHT VIEW</h2>
+              <small>LIVE SIMULATION</small>
+            </div>
+            <div class="flight-stage" id="flight-stage">
+              <div class="flight-overlay flight-overlay-top">
+                <span class="flight-chip" id="flight-status">DISARMED</span>
+                <span class="flight-chip" id="flight-vehicle">AX-01</span>
+              </div>
+              <svg
+                viewBox="0 0 600 300"
+                role="img"
+                aria-label="Virtual drone flight area"
+              >
+                <path
+                  class="flight-boundary"
+                  d="M120 45H480Q535 45 535 100V200Q535 255 480 255H120Q65 255 65 200V100Q65 45 120 45Z"
+                />
+                <path
+                  d="M300 58v184M78 150h444"
+                  stroke="#8eb79b24"
+                  stroke-dasharray="3 8"
+                />
+                <g id="flight-drone-shadow">
+                  <ellipse class="flight-drone-shadow" rx="39" ry="20" />
+                </g>
+                <g id="flight-drone">
+                  <g transform="scale(1)">
+                    <path
+                      class="flight-drone-arm"
+                      d="M-25-14 25 14M25-14-25 14"
+                    />
+                    <path
+                      class="flight-drone-body"
+                      d="M0-18 10-8 11 8 0 17-11 8-10-8Z"
+                    />
+                    <circle class="flight-rotor" cx="-30" cy="-18" r="9" />
+                    <circle class="flight-rotor" cx="30" cy="-18" r="9" />
+                    <circle class="flight-rotor" cx="-30" cy="18" r="9" />
+                    <circle class="flight-rotor" cx="30" cy="18" r="9" />
+                    <path class="flight-prop" d="M-36-18h12M24-18h12M-36 18h12M24 18h12" />
+                    <circle class="flight-drone-camera" cx="0" cy="8" r="3" />
+                  </g>
+                </g>
+                <text class="flight-drone-label" id="flight-drone-label" x="300" y="125">
+                  AX-01
+                </text>
+              </svg>
+              <div class="flight-overlay flight-overlay-bottom">
+                <span class="flight-chip">BOUNDARY · TRAINING AREA</span>
+              </div>
+            </div>
+            <div class="flight-readouts">
+              <div class="flight-readout">
+                <span>Altitude</span><b id="flight-altitude">0 m</b>
+              </div>
+              <div class="flight-readout">
+                <span>Ground speed</span><b id="flight-speed">0 m/s</b>
+              </div>
+              <div class="flight-readout">
+                <span>Heading</span><b id="flight-heading">000°</b>
+              </div>
+              <div class="flight-readout">
+                <span>Position</span><b id="flight-position">0, 0</b>
+              </div>
+            </div>
+          </section>
+          <div id="controls-workspace"></div>
+          <div class="controls-toolbar">
+            <div>
+              <h2>Drone controls</h2>
+              <small
+                >Manual throttle and pitch controls · simulation only</small
+              >
+            </div>
+          </div>
+        </section>
+        <footer
+          style="
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 18px;
+            padding: 0 3px;
+          "
+        >
+          <span>GOD'S EYE · ACADEMIC PROTOTYPE</span
+          ><span
+            >DATA REFRESH
+            <b id="footer-time" style="color: var(--text); font-weight: 400"
+              >00:00:00</b
+            ></span
+          >
+        </footer>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+      const toast = document.getElementById("toast");
+      let toastTimer;
+
+      function notify(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+      }
+
+      const healthData = {
+        "AX-01": {
+          model: "Kestrel",
+          battery: 82,
+          signal: 98,
+          gps: 94,
+          temp: 61,
+          alt: 142,
+          speed: 38,
+        },
+        "AX-02": {
+          model: "Kestrel",
+          battery: 67,
+          signal: 91,
+          gps: 89,
+          temp: 58,
+          alt: 118,
+          speed: 31,
+        },
+        "AX-03": {
+          model: "Finch",
+          battery: 31,
+          signal: 76,
+          gps: 82,
+          temp: 64,
+          alt: 96,
+          speed: 24,
+        },
+        "AX-04": {
+          model: "Finch",
+          battery: 91,
+          signal: 99,
+          gps: 97,
+          temp: 55,
+          alt: 164,
+          speed: 42,
+        },
+      };
+      let selectedDrone = "AX-01";
+
+      function updateHealth(id, refresh = false) {
+        const base = healthData[id];
+        const data = refresh
+          ? {
+              ...base,
+              battery: Math.max(
+                18,
+                Math.min(99, base.battery + Math.round(Math.random() * 6 - 2)),
+              ),
+              signal: Math.max(
+                60,
+                Math.min(100, base.signal + Math.round(Math.random() * 4 - 2)),
+              ),
+              temp: Math.max(
+                48,
+                Math.min(72, base.temp + Math.round(Math.random() * 4 - 2)),
+              ),
+            }
+          : base;
+        const score = Math.round(
+          (data.battery +
+            data.signal +
+            data.gps +
+            (100 - Math.max(0, data.temp - 40) * 1.5)) /
+            4,
+        );
+
+        document.getElementById("health-score").innerHTML =
+          `${score}<span style="font-size:12px;color:var(--muted)"> / 100</span>`;
+        const healthStatus = document.getElementById("health-status");
+        healthStatus.textContent =
+          score >= 85
+            ? "● NOMINAL"
+            : score >= 70
+              ? "● ADVISORY"
+              : "● REVIEW REQUIRED";
+        healthStatus.style.color =
+          score >= 85
+            ? "var(--teal)"
+            : score >= 70
+              ? "var(--amber)"
+              : "var(--red)";
+
+        [
+          ["health-battery", data.battery],
+          ["health-signal", data.signal],
+          ["health-temp", Math.min(100, data.temp)],
+        ].forEach(([id, value]) => {
+          document.getElementById(id).style.width = `${value}%`;
+        });
+        document.getElementById("health-gps").style.width = `${data.gps}%`;
+        document.getElementById("health-battery-value").textContent =
+          `${data.battery}%`;
+        document.getElementById("health-signal-value").textContent =
+          `${data.signal}%`;
+        document.getElementById("health-gps-value").textContent =
+          `±${(2.4 - data.gps / 100).toFixed(1)}m`;
+        document.getElementById("health-temp-value").textContent =
+          `${data.temp}°C`;
+        document.getElementById("preview-tag").textContent =
+          `LIVE VEHICLE FEED · ${id}`;
+        document.getElementById("preview-alt").textContent =
+          `ALT ${data.alt}m · SPD ${data.speed} km/h`;
+      }
+
+      function healthSummary(data) {
+        const score = Math.round(
+          (data.battery +
+            data.signal +
+            data.gps +
+            (100 - Math.max(0, data.temp - 40) * 1.5)) /
+            4,
+        );
+        return {
+          score,
+          status:
+            score >= 85
+              ? "NOMINAL"
+              : score >= 70
+                ? "ADVISORY"
+                : "REVIEW REQUIRED",
+          tone: score >= 85 ? "" : score >= 70 ? "warn" : "alert",
+        };
+      }
+
+      function renderHealth() {
+        document.getElementById("health-grid").innerHTML = Object.entries(
+          healthData,
+        )
+          .map(([id, data]) => {
+            const summary = healthSummary(data);
+            return `
+            <article class="card health-unit">
+              <div class="health-unit-head">
+                <div>
+                  <b>${id} · ${data.model}</b>
+                  <small>Last update · live telemetry</small>
+                </div>
+                <span class="health-score-chip ${summary.tone}">${summary.score}/100</span>
+              </div>
+              <div class="health-status-line">
+                <span>System status</span>
+                <b class="${summary.tone}">${summary.status}</b>
+              </div>
+              <div class="health-meter">
+                <i class="${summary.tone}" style="width:${summary.score}%"></i>
+              </div>
+              <div class="health-readings">
+                <div class="reading"><label>Battery</label><strong>${data.battery}%</strong></div>
+                <div class="reading"><label>Signal</label><strong>${data.signal}%</strong></div>
+                <div class="reading"><label>GPS</label><strong>±${(2.4 - data.gps / 100).toFixed(1)}m</strong></div>
+                <div class="reading"><label>Motor</label><strong>${data.temp}°C</strong></div>
+              </div>
+            </article>`;
+          })
+          .join("");
+      }
+      renderHealth();
+
+      document
+        .getElementById("refresh-health")
+        .addEventListener("click", () => {
+          Object.values(healthData).forEach((data) => {
+            data.battery = Math.max(
+              18,
+              Math.min(99, data.battery + Math.round(Math.random() * 6 - 2)),
+            );
+            data.signal = Math.max(
+              60,
+              Math.min(100, data.signal + Math.round(Math.random() * 4 - 2)),
+            );
+            data.temp = Math.max(
+              48,
+              Math.min(72, data.temp + Math.round(Math.random() * 4 - 2)),
+            );
+          });
+          renderHealth();
+          document.getElementById("health-poll-time").textContent =
+            new Date().toLocaleTimeString();
+          notify("Fleet health check complete · 4 telemetry records updated");
+        });
+
+      function selectDrone(id) {
+          if (id !== selectedDrone && manualControlState.armed) {
+            resetManualControls();
+          }
+          selectedDrone = id;
+
+          document.querySelectorAll(".fleet-row").forEach((row) => {
+            row.classList.toggle("selected", row.dataset.droneRow === id);
+          });
+
+          document.querySelectorAll(".drone").forEach((drone) => {
+            drone.classList.toggle("selected", drone.dataset.drone === id);
+          });
+
+          document.getElementById("health-title").textContent =
+            `SELECTED VEHICLE · ${id}`;
+          document.getElementById("task-drone").textContent =
+          `${id} · ${healthData[id].model}`;
+        document.getElementById("control-drone").textContent =
+          `${id} · ${healthData[id].model}`;
+        updateHealth(id);
+        renderManualControl();
+        notify(`${id} selected · telemetry stream locked`);
+      }
+
+      document.querySelectorAll(".drone").forEach((drone) => {
+        drone.addEventListener("click", () => selectDrone(drone.dataset.drone));
+      });
+      document.querySelectorAll(".fleet-row").forEach((row) => {
+        row.addEventListener("click", () => selectDrone(row.dataset.droneRow));
+      });
+      document.querySelectorAll("[data-control]").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-control]").forEach((item) => {
+            item.classList.remove("active");
+          });
+          button.classList.add("active");
+          notify(`${button.dataset.control} simulated for ${selectedDrone}`);
+        });
+      });
+      const manualControlState = {
+        armed: false,
+        throttle: 0,
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+      };
+
+      const virtualFlightState = {
+        x: 300,
+        y: 150,
+        altitude: 0,
+        heading: 0,
+        lastFrame: 0,
+      };
+
+      const flightArea = {
+        centerX: 300,
+        centerY: 150,
+        minX: 92,
+        maxX: 508,
+        minY: 72,
+        maxY: 228,
+        maxAltitude: 120,
+      };
+
+      const manualArmButton = document.getElementById("manual-arm");
+      const manualControlResponse = document.getElementById("control-response");
+      const throttleReadout = document.getElementById("throttle-value");
+      const pitchReadout = document.getElementById("pitch-value");
+
+      const joystickPositions = {
+        throttle: { x: 0, y: 1 },
+        pitch: { x: 0, y: 0 },
+      };
+
+      const throttleJoystick = document.getElementById("throttle-joystick");
+      const pitchJoystick = document.getElementById("pitch-joystick");
+
+      function resetManualControls() {
+        manualControlState.armed = false;
+        manualControlState.throttle = 0;
+        manualControlState.yaw = 0;
+        manualControlState.pitch = 0;
+        manualControlState.roll = 0;
+        joystickPositions.throttle = { x: 0, y: 1 };
+        joystickPositions.pitch = { x: 0, y: 0 };
+      }
+
+      function renderVirtualFlight() {
+        const droneScale = 1 + virtualFlightState.altitude / 180;
+        const drone = document.getElementById("flight-drone");
+        const shadow = document.getElementById("flight-drone-shadow");
+        const droneLabel = document.getElementById("flight-drone-label");
+
+        drone.setAttribute(
+          "transform",
+          `translate(${virtualFlightState.x} ${virtualFlightState.y}) ` +
+            `rotate(${virtualFlightState.heading}) scale(${droneScale})`,
+        );
+        shadow.setAttribute(
+          "transform",
+          `translate(${virtualFlightState.x} ${
+            virtualFlightState.y + virtualFlightState.altitude * 0.25
+          })`,
+        );
+        droneLabel.setAttribute("x", String(virtualFlightState.x));
+        droneLabel.setAttribute(
+          "y",
+          String(virtualFlightState.y - 37 * droneScale),
+        );
+        droneLabel.textContent = selectedDrone;
+
+        const flightStatus = manualControlState.armed
+          ? "ARMED · SIMULATED"
+          : "DISARMED";
+        const heading = Math.round(virtualFlightState.heading + 360) % 360;
+        const horizontalSpeed =
+          (Math.hypot(manualControlState.pitch, manualControlState.roll) / 45) *
+          8;
+
+        document.getElementById("flight-status").textContent = flightStatus;
+        document.getElementById("flight-vehicle").textContent = selectedDrone;
+        document.getElementById("flight-altitude").textContent =
+          `${virtualFlightState.altitude.toFixed(1)} m`;
+        document.getElementById("flight-speed").textContent =
+          `${horizontalSpeed.toFixed(1)} m/s`;
+        document.getElementById("flight-heading").textContent =
+          `${String(heading).padStart(3, "0")}°`;
+        document.getElementById("flight-position").textContent =
+          `${Math.round(virtualFlightState.x - flightArea.centerX)}, ` +
+          `${Math.round(flightArea.centerY - virtualFlightState.y)}`;
+      }
+
+      function updateFlightPosition(secondsSinceLastFrame) {
+        const horizontalSpeed = 65;
+        const verticalSpeed = 8;
+        const turnSpeed = 75;
+
+        virtualFlightState.x = Math.max(
+          flightArea.minX,
+          Math.min(
+            flightArea.maxX,
+            virtualFlightState.x +
+              (manualControlState.roll / 45) *
+                horizontalSpeed *
+                secondsSinceLastFrame,
+          ),
+        );
+        virtualFlightState.y = Math.max(
+          flightArea.minY,
+          Math.min(
+            flightArea.maxY,
+            virtualFlightState.y -
+              (manualControlState.pitch / 45) *
+                horizontalSpeed *
+                secondsSinceLastFrame,
+          ),
+        );
+        virtualFlightState.altitude = Math.max(
+          0,
+          Math.min(
+            flightArea.maxAltitude,
+            virtualFlightState.altitude +
+              ((manualControlState.throttle - 50) / 50) *
+                verticalSpeed *
+                secondsSinceLastFrame,
+          ),
+        );
+        virtualFlightState.heading =
+          (virtualFlightState.heading +
+            (manualControlState.yaw / 45) *
+              turnSpeed *
+              secondsSinceLastFrame +
+            360) %
+          360;
+      }
+
+      function animateVirtualFlight(timestamp) {
+        if (!manualControlState.armed) {
+          virtualFlightState.lastFrame = 0;
+          return;
+        }
+
+        const secondsSinceLastFrame = virtualFlightState.lastFrame
+          ? Math.min((timestamp - virtualFlightState.lastFrame) / 1000, 0.05)
+          : 0;
+
+        virtualFlightState.lastFrame = timestamp;
+        updateFlightPosition(secondsSinceLastFrame);
+        renderVirtualFlight();
+        requestAnimationFrame(animateVirtualFlight);
+      }
+
+      function positionJoystick(joystick, position) {
+        const stick = joystick.querySelector(".joystick-stick");
+        const horizontalTravel = (joystick.clientWidth - stick.offsetWidth) / 2;
+        const verticalTravel = (joystick.clientHeight - stick.offsetHeight) / 2;
+
+        stick.style.left = `${
+          joystick.clientWidth / 2 + position.x * horizontalTravel
+        }px`;
+        stick.style.top = `${
+          joystick.clientHeight / 2 + position.y * verticalTravel
+        }px`;
+      }
+
+      function updateManualControlStatus() {
+        manualArmButton.textContent = manualControlState.armed ? "DISARM" : "ARM";
+        manualArmButton.setAttribute(
+          "aria-pressed",
+          String(manualControlState.armed),
+        );
+
+        [throttleJoystick, pitchJoystick].forEach((joystick) => {
+          const isDisabled = !manualControlState.armed;
+          joystick.classList.toggle("disabled", isDisabled);
+          joystick.setAttribute("aria-disabled", String(isDisabled));
+        });
+      }
+
+      function renderControlResponse() {
+        const response = {
+          type: "simulated_control_response",
+          vehicle: selectedDrone,
+          armed: manualControlState.armed,
+          controls: {
+            throttle_percent: manualControlState.throttle,
+            yaw_degrees: manualControlState.yaw,
+            pitch_degrees: manualControlState.pitch,
+            roll_degrees: manualControlState.roll,
+          },
+          status: manualControlState.armed ? "armed" : "disarmed",
+          updated_at: new Date().toISOString(),
+        };
+
+        manualControlResponse.textContent = JSON.stringify(response, null, 2);
+      }
+
+      function renderManualControl() {
+        throttleReadout.textContent =
+          `${manualControlState.throttle}% · ${manualControlState.yaw}°`;
+        pitchReadout.textContent =
+          `${manualControlState.pitch}° · ${manualControlState.roll}°`;
+
+        updateManualControlStatus();
+        positionJoystick(throttleJoystick, joystickPositions.throttle);
+        positionJoystick(pitchJoystick, joystickPositions.pitch);
+        renderControlResponse();
+        renderVirtualFlight();
+      }
+
+      function setManualFlightArmed(isArmed) {
+        if (!isArmed) {
+          resetManualControls();
+        } else {
+          manualControlState.armed = true;
+          virtualFlightState.lastFrame = 0;
+        }
+
+        renderManualControl();
+
+        if (isArmed) {
+          requestAnimationFrame(animateVirtualFlight);
+        }
+
+        notify(
+          `Manual controls ${isArmed ? "armed" : "disarmed"} for ${selectedDrone} · simulation only`,
+        );
+      }
+
+      function limitJoystickPosition(position) {
+        const distanceFromCenter = Math.hypot(position.x, position.y);
+
+        if (distanceFromCenter > 1) {
+          return {
+            x: position.x / distanceFromCenter,
+            y: position.y / distanceFromCenter,
+          };
+        }
+
+        return position;
+      }
+
+      function updateThrottleAndYaw(position) {
+        joystickPositions.throttle = limitJoystickPosition(position);
+        manualControlState.throttle = Math.round(
+          ((1 - joystickPositions.throttle.y) / 2) * 100,
+        );
+        manualControlState.yaw = Math.round(
+          joystickPositions.throttle.x * 45,
+        );
+        renderManualControl();
+      }
+
+      function updatePitchAndRoll(position) {
+        joystickPositions.pitch = limitJoystickPosition(position);
+        manualControlState.pitch = Math.round(
+          -joystickPositions.pitch.y * 45,
+        );
+        manualControlState.roll = Math.round(joystickPositions.pitch.x * 45);
+        renderManualControl();
+      }
+
+      function bindJoystick(joystick, getPosition, onMove) {
+        function moveStickToPointer(event) {
+          const bounds = joystick.getBoundingClientRect();
+          const stick = joystick.querySelector(".joystick-stick");
+          const horizontalTravel = (bounds.width - stick.offsetWidth) / 2;
+          const verticalTravel = (bounds.height - stick.offsetHeight) / 2;
+          const centerX = bounds.left + bounds.width / 2;
+          const centerY = bounds.top + bounds.height / 2;
+
+          onMove({
+            x: (event.clientX - centerX) / horizontalTravel,
+            y: (event.clientY - centerY) / verticalTravel,
+          });
+        }
+
+        joystick.addEventListener("pointerdown", (event) => {
+          if (!manualControlState.armed) return;
+
+          joystick.setPointerCapture(event.pointerId);
+          moveStickToPointer(event);
+        });
+
+        joystick.addEventListener("pointermove", (event) => {
+          if (
+            manualControlState.armed &&
+            joystick.hasPointerCapture(event.pointerId)
+          ) {
+            moveStickToPointer(event);
+          }
+        });
+
+        joystick.addEventListener("keydown", (event) => {
+          if (!manualControlState.armed) return;
+
+          const keyMovement = {
+            ArrowLeft: [-0.05, 0],
+            ArrowRight: [0.05, 0],
+            ArrowUp: [0, -0.05],
+            ArrowDown: [0, 0.05],
+          }[event.key];
+
+          if (!keyMovement) return;
+
+          event.preventDefault();
+          const currentPosition = getPosition();
+          onMove({
+            x: currentPosition.x + keyMovement[0],
+            y: currentPosition.y + keyMovement[1],
+          });
+        });
+      }
+
+      manualArmButton.addEventListener("click", () => {
+        setManualFlightArmed(!manualControlState.armed);
+      });
+
+      bindJoystick(
+        throttleJoystick,
+        () => joystickPositions.throttle,
+        updateThrottleAndYaw,
+      );
+      bindJoystick(
+        pitchJoystick,
+        () => joystickPositions.pitch,
+        updatePitchAndRoll,
+      );
+
+      renderManualControl();
+      const overviewSections = [
+        document.querySelector(".kpis"),
+        document.querySelector(".grid"),
+        document.querySelector(".bottom-grid"),
+        document.querySelector(".mission-card"),
+      ];
+      const fleetPage = document.getElementById("fleet-page");
+      const healthPage = document.getElementById("health-page");
+      const geofencePage = document.getElementById("geofence-page");
+      const cameraPage = document.getElementById("camera-page");
+      const controlsPage = document.getElementById("controls-page");
+      document
+        .getElementById("controls-workspace")
+        .append(document.querySelector(".manual-control-panel"));
+      const pageTitle = document.querySelector(".topbar h1");
+      const pageDescription = document.querySelector(".topbar p");
+
+      document.querySelectorAll(".nav button").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".nav button").forEach((item) => {
+            item.classList.remove("active");
+          });
+          button.classList.add("active");
+
+          const isFleet = button.dataset.tab === "fleet";
+          const isHealth = button.dataset.tab === "health";
+          const isGeofence = button.dataset.tab === "geofences";
+          const isCamera = button.dataset.tab === "camera";
+          const isControls = button.dataset.tab === "controls";
+          const isSubpage =
+            isFleet || isHealth || isGeofence || isCamera || isControls;
+
+          overviewSections.forEach((section) => {
+            section.style.display = isSubpage ? "none" : "";
+          });
+          fleetPage.classList.toggle("open", isFleet);
+          healthPage.classList.toggle("open", isHealth);
+          geofencePage.classList.toggle("open", isGeofence);
+          cameraPage.classList.toggle("open", isCamera);
+          controlsPage.classList.toggle("open", isControls);
+
+          pageTitle.textContent = isFleet
+            ? "Fleet tracking"
+            : isHealth
+              ? "Health monitor"
+              : isGeofence
+                ? "Geofences"
+                : isCamera
+                  ? "People count"
+                  : isControls
+                    ? "Drone controls"
+                    : "Mission overview";
+          pageDescription.textContent = isFleet
+            ? "Track every vehicle, route, and position update in the training sector."
+            : isHealth
+              ? "Review battery, signal, GPS, temperature, and readiness for every vehicle."
+              : isGeofence
+                ? "Manage training-airspace boundaries and inspection-only zones."
+                : isCamera
+                  ? "Count visible people locally and receive a configurable crowding alert."
+                  : isControls
+                    ? "Adjust simulated throttle and pitch for the selected vehicle and review the control response."
+                    : "Monitor sector position, airspace safety, and vehicle readiness.";
+
+          if (isHealth) renderHealth();
+          if (!isCamera) stopCamera();
+          notify(`${button.querySelector("span").textContent} view opened`);
+        });
+      });
+      document.getElementById("center-fleet").addEventListener("click", () => {
+        notify("Fleet view centered · 4 vehicle tracks visible");
+      });
+      document.getElementById("draw-geofence").addEventListener("click", () => {
+        notify("Inspection zone drawing enabled · simulator only");
+      });
+
+      document.querySelectorAll(".zone-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+          button.classList.toggle("enabled");
+          button.textContent = button.classList.contains("enabled")
+            ? "ON"
+            : "OFF";
+          notify(
+            `Boundary ${button.classList.contains("enabled") ? "enabled" : "disabled"} in simulator`,
+          );
+        });
+      });
+      document.querySelectorAll("[data-layer]").forEach((button) => {
+        button.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-layer]")
+            .forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+          notify(`${button.textContent} layer enabled`);
+        });
+      });
+
+      const areaMode = document.getElementById("area-mode");
+      const reviewArea = document.getElementById("review-area");
+      const reviewRect = reviewArea.querySelector("rect");
+      const reviewLabel = reviewArea.querySelector("text");
+      const threatMode = document.getElementById("threat-mode");
+      const threatArea = document.getElementById("threat-area");
+      const threatRect = threatArea.querySelector("rect");
+      const threatLabel = threatArea.querySelector("text");
+      let selectingArea = false;
+      let simulatingThreat = false;
+
+      areaMode.addEventListener("click", () => {
+        selectingArea = !selectingArea;
+        areaMode.classList.toggle("active", selectingArea);
+        areaMode.textContent = selectingArea ? "CLICK MAP" : "SELECT AREA";
+        notify(
+          selectingArea
+            ? "Select a review area on the map"
+            : "Area selection cancelled",
+        );
+      });
+      threatMode.addEventListener("click", () => {
+        simulatingThreat = !simulatingThreat;
+        threatMode.classList.toggle("active", simulatingThreat);
+        threatMode.textContent = simulatingThreat
+          ? "CLICK MAP"
+          : "SIMULATE THREAT";
+        notify(
+          simulatingThreat
+            ? "Select a simulated threat area"
+            : "Threat simulation cancelled",
+        );
+      });
+
+      document.querySelector(".map-svg").addEventListener("click", (event) => {
+        if (
+          (!selectingArea && !simulatingThreat) ||
+          event.target.closest(".drone")
+        )
+          return;
+
+        const point = new DOMPoint(
+          event.clientX,
+          event.clientY,
+        ).matrixTransform(event.currentTarget.getScreenCTM().inverse());
+        const size = 58;
+        const x = Math.max(12, Math.min(800 - size - 12, point.x - size / 2));
+        const y = Math.max(38, Math.min(495 - size - 12, point.y - size / 2));
+        const grid = `${String.fromCharCode(65 + Math.floor(x / 100))}-${Math.floor(y / 60) + 1}`;
+        const drone = document
+          .querySelector(".fleet-row.selected b")
+          .textContent.split(" · ")[0];
+
+        if (simulatingThreat) {
+          threatRect.setAttribute("x", x);
+          threatRect.setAttribute("y", y);
+          threatRect.setAttribute("width", size);
+          threatRect.setAttribute("height", size);
+          threatLabel.setAttribute("x", x + 8);
+          threatLabel.setAttribute("y", y - 8);
+          threatArea.setAttribute("opacity", "1");
+
+          document.getElementById("task-name").textContent =
+            `${grid} threat response`;
+          document.getElementById("task-note").textContent =
+            "Passive inspection only · no engagement controls";
+          document.getElementById("task-sensors").textContent =
+            "EO / IR + air quality";
+          document.getElementById("task-safety").textContent =
+            "REVIEW REQUIRED";
+          document.getElementById("task-safety").style.color = "var(--amber)";
+          document.getElementById("task-safety-note").textContent =
+            "Operator confirmation required";
+          document.getElementById("task-state").textContent =
+            "THREAT SIMULATION · LOGGED";
+          document
+            .getElementById("advisory-list")
+            .insertAdjacentHTML(
+              "afterbegin",
+              `<div class="alert critical"><div class="alert-mark"></div><div><b>Simulated threat at ${grid}</b><p>${drone} assigned for passive inspection and reporting.</p></div></div>`,
+            );
+
+          simulatingThreat = false;
+          threatMode.classList.remove("active");
+          threatMode.textContent = "SIMULATE THREAT";
+          notify(`Simulated threat logged · ${drone} assigned for inspection`);
+          return;
+        }
+
+        reviewRect.setAttribute("x", x);
+        reviewRect.setAttribute("y", y);
+        reviewRect.setAttribute("width", size);
+        reviewRect.setAttribute("height", size);
+        reviewLabel.setAttribute("x", x + 8);
+        reviewLabel.setAttribute("y", y - 8);
+        reviewArea.setAttribute("opacity", "1");
+
+        selectingArea = false;
+        areaMode.classList.remove("active");
+        areaMode.textContent = "SELECT AREA";
+        document.getElementById("task-name").textContent =
+          `Grid ${grid} review`;
+        document.getElementById("task-note").textContent =
+          "Passive inspection area · route preview ready";
+        document.getElementById("task-state").textContent =
+          "TASK DRAFT · SAFETY CHECKED";
+        notify(`Review area assigned to ${drone}`);
+      });
+      document.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.action !== "Run health check") {
+            notify(`${button.dataset.action} queued in simulator`);
+            return;
+          }
+
+          button.disabled = true;
+          button.querySelector("b").textContent = "Checking telemetry…";
+          notify(`Polling ${selectedDrone} sensors…`);
+
+          setTimeout(() => {
+            updateHealth(selectedDrone, true);
+            button.disabled = false;
+            button.querySelector("b").textContent = "Run health check";
+            notify(
+              `${selectedDrone} health check complete · telemetry updated`,
+            );
+          }, 900);
+        });
+      });
+
+      document.getElementById("refresh").addEventListener("click", () => {
+        notify("Telemetry refreshed · all links nominal");
+      });
+      document.getElementById("export").addEventListener("click", () => {
+        notify("Brief prepared · download simulated");
+      });
+
+      const mapSvg = document.querySelector(".map-svg");
+      const gpsReadout = document.getElementById("gps-readout");
+      let mapZoom = 1;
+
+      document.getElementById("zoom-in").addEventListener("click", () => {
+        mapZoom = Math.min(1.5, mapZoom + 0.1);
+        mapSvg.style.transform = `scale(${mapZoom})`;
+        notify(`Map zoom ${Math.round(mapZoom * 100)}%`);
+      });
+      document.getElementById("zoom-out").addEventListener("click", () => {
+        mapZoom = Math.max(1, mapZoom - 0.1);
+        mapSvg.style.transform = `scale(${mapZoom})`;
+        notify(`Map zoom ${Math.round(mapZoom * 100)}%`);
+      });
+      mapSvg.addEventListener("mousemove", (event) => {
+        const point = new DOMPoint(
+          event.clientX,
+          event.clientY,
+        ).matrixTransform(mapSvg.getScreenCTM().inverse());
+        const latitude = (28.68 - (point.y / 495) * 0.22).toFixed(4);
+        const longitude = (77.1 + (point.x / 800) * 0.3).toFixed(4);
+        gpsReadout.textContent = `CURSOR ${latitude}° N · ${longitude}° E · GPS LOCK · ±1.2M`;
+      });
+
+      const nightView = document.getElementById("night-view");
+      const nightToggle = document.getElementById("night-toggle");
+      const nightCanvas = document.getElementById("night-canvas");
+      const nightContext = nightCanvas.getContext("2d");
+      let nightFrame = 0;
+
+      function drawNightView() {
+        const width = nightCanvas.width;
+        const height = nightCanvas.height;
+
+        nightContext.fillStyle = "#07130c";
+        nightContext.fillRect(0, 0, width, height);
+
+        nightContext.strokeStyle = "#38724a";
+        nightContext.lineWidth = 2;
+        nightContext.beginPath();
+        nightContext.moveTo(0, 185);
+        nightContext.lineTo(80, 135);
+        nightContext.lineTo(165, 158);
+        nightContext.lineTo(242, 92);
+        nightContext.lineTo(335, 125);
+        nightContext.lineTo(440, 68);
+        nightContext.stroke();
+
+        nightContext.strokeStyle = "#214a31";
+        nightContext.lineWidth = 1;
+        for (let y = 30; y < height; y += 34) {
+          nightContext.beginPath();
+          nightContext.moveTo(0, y);
+          nightContext.lineTo(width, y);
+          nightContext.stroke();
+        }
+
+        const points = [
+          [270, 101, "AX-01"],
+          [348, 125, "ZONE"],
+          [125, 151, "NODE"],
+        ];
+        points.forEach(([x, y, label], index) => {
+          const pulse = 3 + Math.sin(nightFrame / 8 + index) * 1.5;
+
+          nightContext.beginPath();
+          nightContext.arc(x, y, pulse + 4, 0, Math.PI * 2);
+          nightContext.fillStyle = index === 0 ? "#b9ff9a55" : "#efbd6b44";
+          nightContext.fill();
+
+          nightContext.beginPath();
+          nightContext.arc(x, y, 3, 0, Math.PI * 2);
+          nightContext.fillStyle = index === 0 ? "#d5ffba" : "#ffd98e";
+          nightContext.fill();
+          nightContext.fillStyle = "#9af2b0";
+          nightContext.font = "11px monospace";
+          nightContext.fillText(label, x + 9, y + 4);
+        });
+
+        nightFrame++;
+        if (!nightView.classList.contains("off")) {
+          requestAnimationFrame(drawNightView);
+        }
+      }
+
+      drawNightView();
+      nightToggle.addEventListener("click", () => {
+        const hidden = nightView.classList.toggle("off");
+        nightToggle.textContent = hidden ? "NIGHT VIEW" : "HIDE NIGHT VIEW";
+        notify(
+          hidden ? "Night view hidden" : "Night vision feed enabled · AX-01",
+        );
+      });
+      const cameraVideo = document.getElementById("camera-video");
+      const cameraOverlay = document.getElementById("camera-overlay");
+      const cameraOverlayContext = cameraOverlay.getContext("2d");
+      const cameraPlaceholder = document.getElementById("camera-placeholder");
+      const cameraStart = document.getElementById("camera-start");
+      const cameraStop = document.getElementById("camera-stop");
+      const cameraStatus = document.getElementById("camera-status");
+      const cameraCount = document.getElementById("camera-count");
+      const cameraThreshold = document.getElementById("crowd-threshold");
+      const cameraWarning = document.getElementById("camera-warning");
+
+      let cameraStream = null;
+      let cameraRunning = false;
+      let cameraSession = 0;
+      let personModel = null;
+      let personModelPromise = null;
+      let lastCameraCount = null;
+      let wasAboveCrowdThreshold = false;
+
+      function loadScript(source, globalName) {
+        if (window[globalName]) return Promise.resolve();
+
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = source;
+          script.async = true;
+          script.onload = () => {
+            if (window[globalName]) {
+              resolve();
+            } else {
+              reject(
+                new Error(`The ${globalName} library did not initialize.`),
+              );
+            }
+          };
+          script.onerror = () =>
+            reject(new Error(`Could not load the ${globalName} library.`));
+          document.head.appendChild(script);
+        });
+      }
+
+      function loadPersonModel() {
+        if (!personModelPromise) {
+          personModelPromise = (async () => {
+            await loadScript(
+              "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js",
+              "tf",
+            );
+            await loadScript(
+              "https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js",
+              "cocoSsd",
+            );
+            personModel = await window.cocoSsd.load({ base: "mobilenet_v2" });
+            return personModel;
+          })().catch((error) => {
+            personModelPromise = null;
+            throw error;
+          });
+        }
+
+        return personModelPromise;
+      }
+
+      function updateCrowdWarning() {
+        const threshold = Number(cameraThreshold.value);
+        const validThreshold =
+          Number.isInteger(threshold) && threshold >= 1 && threshold <= 100;
+
+        if (!validThreshold) {
+          cameraThreshold.setCustomValidity(
+            "Enter a whole number from 1 to 100.",
+          );
+          cameraWarning.hidden = true;
+          cameraStatus.textContent = "Set a crowding threshold from 1 to 100.";
+          wasAboveCrowdThreshold = false;
+          return false;
+        }
+
+        cameraThreshold.setCustomValidity("");
+        const overThreshold =
+          lastCameraCount !== null && lastCameraCount >= threshold;
+        cameraWarning.hidden = !overThreshold;
+        cameraWarning.textContent = overThreshold
+          ? `Crowding alert: ${lastCameraCount} visible people detected (threshold ${threshold}).`
+          : "";
+
+        if (overThreshold && !wasAboveCrowdThreshold) {
+          notify(`Crowding alert · ${lastCameraCount} visible people detected`);
+        }
+        wasAboveCrowdThreshold = overThreshold;
+        return true;
+      }
+
+      function drawPeopleDetections(people) {
+        cameraOverlay.width = cameraVideo.videoWidth;
+        cameraOverlay.height = cameraVideo.videoHeight;
+        cameraOverlayContext.clearRect(
+          0,
+          0,
+          cameraOverlay.width,
+          cameraOverlay.height,
+        );
+        cameraOverlayContext.strokeStyle = "#b9e769";
+        cameraOverlayContext.fillStyle = "#b9e769";
+        cameraOverlayContext.lineWidth = Math.max(2, cameraOverlay.width / 320);
+        cameraOverlayContext.font = `${Math.max(12, cameraOverlay.width / 45)}px sans-serif`;
+
+        people.forEach((person) => {
+          const [x, y, width, height] = person.bbox;
+          cameraOverlayContext.strokeRect(x, y, width, height);
+          cameraOverlayContext.fillText("PERSON", x + 4, Math.max(14, y - 5));
+        });
+      }
+
+      async function detectCameraFrames() {
+        while (cameraRunning) {
+          if (cameraVideo.readyState >= 2) {
+            const predictions = await personModel.detect(cameraVideo);
+            if (!cameraRunning) break;
+
+            const people = predictions.filter(
+              (prediction) =>
+                prediction.class === "person" && prediction.score >= 0.5,
+            );
+            drawPeopleDetections(people);
+            lastCameraCount = people.length;
+            cameraCount.textContent = String(people.length);
+
+            if (updateCrowdWarning()) {
+              cameraStatus.textContent =
+                "Camera active · analysis runs locally in this browser.";
+            }
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 700));
+        }
+      }
+
+      function stopCamera(message = "Camera stopped. Feed not saved.") {
+        cameraSession++;
+        cameraRunning = false;
+
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((track) => track.stop());
+          cameraStream = null;
+        }
+
+        cameraVideo.pause();
+        cameraVideo.srcObject = null;
+        cameraOverlayContext.clearRect(
+          0,
+          0,
+          cameraOverlay.width,
+          cameraOverlay.height,
+        );
+        cameraPlaceholder.hidden = false;
+        cameraCount.textContent = "—";
+        lastCameraCount = null;
+        wasAboveCrowdThreshold = false;
+        cameraWarning.hidden = true;
+        cameraWarning.textContent = "";
+        cameraStatus.textContent = message;
+        cameraStart.disabled = false;
+        cameraStop.disabled = true;
+      }
+
+      function getCameraErrorMessage(error) {
+        if (error.name === "NotAllowedError") {
+          return "Camera permission was denied. Allow camera access in your browser and try again.";
+        }
+        if (error.name === "NotFoundError") {
+          return "No camera was found on this device.";
+        }
+        if (error.name === "NotReadableError") {
+          return "The camera is already in use by another app.";
+        }
+        return error.message || "An unexpected camera error occurred.";
+      }
+
+      async function startCamera() {
+        if (!cameraThreshold.reportValidity()) return;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          cameraStatus.textContent =
+            "Camera access requires a supported browser on localhost or HTTPS.";
+          notify("Camera unavailable · use localhost or HTTPS");
+          return;
+        }
+
+        const session = ++cameraSession;
+        cameraStart.disabled = true;
+        cameraStop.disabled = false;
+        cameraStatus.textContent = "Requesting camera permission…";
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false,
+          });
+
+          if (session !== cameraSession) {
+            stream.getTracks().forEach((track) => track.stop());
+            return;
+          }
+          cameraStream = stream;
+          cameraStream = stream;
+          cameraVideo.srcObject = stream;
+          await cameraVideo.play();
+          if (session !== cameraSession) return;
+
+          cameraPlaceholder.hidden = true;
+          cameraStatus.textContent =
+            "Loading person detector. First use downloads the model…";
+          await loadPersonModel();
+          if (session !== cameraSession) return;
+
+          cameraRunning = true;
+          cameraStatus.textContent =
+            "Camera active · analysis runs locally in this browser.";
+          await detectCameraFrames();
+        } catch (error) {
+          if (session !== cameraSession) return;
+
+          const message = getCameraErrorMessage(error);
+          stopCamera(message);
+          notify(`Camera unavailable · ${message}`);
+        }
+      }
+
+      cameraStart.addEventListener("click", startCamera);
+      cameraStop.addEventListener("click", () => stopCamera());
+      cameraThreshold.addEventListener("input", () => {
+        if (updateCrowdWarning() && cameraRunning) {
+          cameraStatus.textContent =
+            "Camera active · analysis runs locally in this browser.";
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && cameraStream) {
+          stopCamera("Camera stopped because this page is hidden.");
+        }
+      });
+      function tick() {
+        const now = new Date();
+        document.getElementById("map-time").textContent =
+          now
+            .toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+            .toUpperCase() + ` · ${now.toLocaleTimeString("en-GB")} IST`;
+        document.getElementById("footer-time").textContent =
+          now.toLocaleTimeString("en-GB");
+      }
+
+      tick();
+      setInterval(tick, 1000);
+    </script>
+  </body>
+</html>
